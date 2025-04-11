@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duit tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="bodystyle.css">
+  <link rel="stylesheet" href="filterstyle.css">
+  <link rel="stylesheet" href="gridstyle.css">
+  <link rel="stylesheet" href="displaybox.css">
+  <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+  <script src="nav.js"></script>
+</head>
+<body>
+  <h3><a href="index.html" class="header">Duit Tracker</a></h3>
+  <center><h5>-Data-</h5></center>
+  <hr>
+  <header-component></header-component>
+
+  <div class="filtercontainer">
+    <div>
+      <label for="bulan-filter">Bulan/Tahun:</label>
+      <select id="bulan-filter"><option value="all">All</option></select>
+    </div>
+    <div>
+      <label for="mtq-filter">Perkara:</label>
+      <select id="mtq-filter"><option value="all">All</option></select>
+    </div>
+    <div>
+      <label for="jantina-filter">Cara:</label>
+      <select id="jantina-filter"><option value="all">All</option></select>
+    </div>
+    <div>
+      <button id="reset-button">Reset</button>
+    </div>
+  </div>
+  
+
+  <div id="loading">Loading data...</div>
+  <div id="grid"></div>
+  
+  <div class="info-container">
+    <div id="row-count-box" class="info-box" style="display: none;">
+      Data:<br><span id="row-count">0</span>
+    </div>
+    <div id="column-l-box" class="info-box" style="display: none;">
+      In:<br>RM <span id="column-l-count">0</span>
+    </div>
+    <div id="column-p-box" class="info-box" style="display: none;">
+      Out:<br>RM <span id="column-p-count">0</span>
+    </div>
+  </div>
+
+<br><br><br>
+
+  <script>
+    const sheetUrl = "https://script.google.com/macros/s/AKfycbxo5sRItvMoK429tMWJZdbMkpSZ36VYo0_04AZhuzmkuLzfIDM5Z8dRc-hFCjwRq3FW/exec";
+
+    let gridInstance;
+    let rawData = [];
+
+    fetch(sheetUrl)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('loading').style.display = 'none';
+
+        if (!data.length) {
+          document.getElementById('loading').textContent = 'No data available.';
+          return;
+        }
+
+        rawData = data;
+
+        // Extract headers and rows
+        const headers = Object.keys(data[0]);
+        const rows = data
+  .map(row => Object.values(row))
+  .sort((a, b) => {
+    const parseDate = (str) => {
+      const [day, month, year] = str.split('/');
+      return new Date(`${year}-${month}-${day}`);
+    };
+    return parseDate(b[0]) - parseDate(a[0]); // Descending by Tarikh (column 0)
+  });
+
+
+        // Populate Perkara filter with unique values
+        const columnIndexMTQ = 1; // 0-based index for column 7 (MTQ)
+        const uniqueMTQValues = Array.from(new Set(rows.map(row => row[columnIndexMTQ])));
+        const mtqFilter = document.getElementById('mtq-filter');
+        uniqueMTQValues.forEach(value => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          mtqFilter.appendChild(option);
+        });
+
+        // Populate Cara filter with unique values
+        const columnIndexJantina = 3; // 0-based index for column 6 (JANTINA)
+        const uniqueJantinaValues = Array.from(new Set(rows.map(row => row[columnIndexJantina])));
+        const jantinaFilter = document.getElementById('jantina-filter');
+        uniqueJantinaValues.forEach(value => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          jantinaFilter.appendChild(option);
+        });
+
+        // Populate Bulan/Tahun filter with unique MM/yyyy values
+const columnIndexDate = 0;
+const uniqueMonthYearValues = Array.from(
+  new Set(rows.map(row => {
+    const [day, month, year] = row[columnIndexDate].split('/');
+    return `${month}/${year}`;
+  }))
+);
+uniqueMonthYearValues.sort((a, b) => {
+  const [am, ay] = a.split('/').map(Number);
+  const [bm, by] = b.split('/').map(Number);
+  return new Date(by, bm - 1) - new Date(ay, am - 1); // Descending
+});
+const bulanFilter = document.getElementById('bulan-filter');
+uniqueMonthYearValues.forEach(value => {
+  const option = document.createElement('option');
+  option.value = value;
+  option.textContent = value;
+  bulanFilter.appendChild(option);
+});
+
+
+        // Initialize Grid.js
+        gridInstance = new gridjs.Grid({
+          columns: headers,
+          data: rows,
+          search: true,
+          sort: true,
+          pagination: {
+            enabled: true,
+            limit: 10,
+          },
+        }).render(document.getElementById('grid'));
+
+        // Function to update statistics display
+const updateStatistics = (filteredRows) => {
+  // Update row count
+  document.getElementById('row-count').textContent = filteredRows.length;
+
+  // Sum of RM (column 3) where column 2 is "in"
+  const inSum = filteredRows
+    .filter(row => row[1]?.toLowerCase() === "in")
+    .reduce((sum, row) => sum + (parseFloat(row[2]) || 0), 0);
+  document.getElementById('column-l-count').textContent = inSum.toFixed(2);
+
+  // Sum of RM (column 3) where column 2 is "out"
+  const outSum = filteredRows
+    .filter(row => row[1]?.toLowerCase() === "out")
+    .reduce((sum, row) => sum + (parseFloat(row[2]) || 0), 0);
+  document.getElementById('column-p-count').textContent = outSum.toFixed(2);
+};
+
+
+        // Initial statistics update with all rows
+        updateStatistics(rows);
+        document.getElementById('row-count-box').style.display = 'block';
+        document.getElementById('column-l-box').style.display = 'block';
+        document.getElementById('column-p-box').style.display = 'block';
+
+        // Function to filter rows based on dropdown selections
+        const applyFilters = () => {
+  const selectedBulan = bulanFilter.value;
+  const selectedMTQ = mtqFilter.value;
+  const selectedJantina = jantinaFilter.value;
+
+  const filteredRows = rows.filter(row => {
+    const matchesMTQ = selectedMTQ === 'all' || row[columnIndexMTQ] === selectedMTQ;
+    const matchesJantina = selectedJantina === 'all' || row[columnIndexJantina] === selectedJantina;
+
+    const [day, month, year] = row[columnIndexDate].split('/');
+    const rowBulan = `${month}/${year}`;
+    const matchesBulan = selectedBulan === 'all' || rowBulan === selectedBulan;
+
+    return matchesMTQ && matchesJantina && matchesBulan;
+  });
+
+  // Update Grid.js with filtered data
+  gridInstance.updateConfig({
+    data: filteredRows,
+  }).forceRender();
+
+  // Update statistics display for filtered data
+  updateStatistics(filteredRows);
+
+  // 💡 Fix compressed table issue after filter
+  setTimeout(() => {
+    const table = document.querySelector('#grid .gridjs-table');
+    if (table) {
+      table.style.width = '100%';
+      table.style.tableLayout = 'auto';
+    }
+  }, 50);
+};
+
+
+        // Reset filters and statistics
+        const resetFilters = () => {
+  bulanFilter.value = 'all';
+  mtqFilter.value = 'all';
+  jantinaFilter.value = 'all';
+
+  gridInstance.updateConfig({
+    data: rows,
+  }).forceRender();
+
+  updateStatistics(rows);
+
+  // 💡 Fix compressed table issue by forcing full width
+  setTimeout(() => {
+    const table = document.querySelector('#grid .gridjs-table');
+    if (table) {
+      table.style.width = '100%';
+      table.style.tableLayout = 'auto'; // keep columns flexible
+    }
+  }, 50);
+};
+
+
+        // Add event listeners for filters
+        mtqFilter.addEventListener('change', applyFilters);
+        jantinaFilter.addEventListener('change', applyFilters);
+
+        // Add event listener for reset button
+        document.getElementById('reset-button').addEventListener('click', resetFilters);
+      })
+      .catch(err => {
+        console.error('Error fetching data:', err);
+        document.getElementById('loading').textContent = 'Failed to load data.';
+      });
+  </script>
+</body>
+</html>

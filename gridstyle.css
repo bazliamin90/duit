@@ -1,0 +1,65 @@
+/* Customize the container */
+#grid {
+  margin: 20px auto;
+  max-width: 90%;
+  border: 2px solid #4CAF50; /* Green border */
+  border-radius: 10px; /* Rounded corners */
+  padding: 10px; /* Padding inside the grid */
+  background-color: #f9f9f9; /* Light gray background */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+}
+
+/* Customize Grid.js table styling */
+#grid .gridjs-container {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #333; /* Darker text color */
+  overflow-x: auto; /* Enable horizontal scroll */
+}
+
+/* Prevent forced wrapping in table cells */
+#grid .gridjs-table {
+  table-layout: auto; /* Allow columns to adjust width dynamically */
+  width: auto; /* Prevent fixed width and allow natural expansion */
+}
+
+/* Highlight table header */
+#grid .gridjs-th {
+  background-color: #4CAF50; /* Green header background */
+  color: #fff; /* White header text */
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 2px solid #ccc; /* Subtle bottom border */
+  padding: 5px 8px;
+}
+
+/* Reduce padding for cell data */
+#grid .gridjs-td {
+  padding: 5px 8px; /* Reduced padding (default is usually larger) */
+  text-align: left; /* Adjust alignment if needed */
+}
+
+/* Customize table rows */
+#grid .gridjs-tr {
+  background-color: #fff; /* White row background */
+  transition: background-color 0.2s;
+}
+
+#grid .gridjs-tr:hover {
+  background-color: #f1f1f1; /* Light gray on hover */
+}
+
+/* Customize pagination buttons */
+#grid .gridjs-pagination button {
+  background-color: #4CAF50; /* Green buttons */
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  margin: 0 2px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#grid .gridjs-pagination button:hover {
+  background-color: #45a049; /* Darker green on hover */
+}

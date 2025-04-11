@@ -1,0 +1,31 @@
+/* Container for the display boxes */
+.info-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Default: 3 columns per row */
+  gap: 15px;
+  margin: 10px auto;
+  max-width: 90%;
+}
+
+/* Individual box styles */
+.info-box {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+/* Responsive adjustments for medium screens (e.g., tablets) */
+@media (max-width: 1024px) {
+  .info-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 boxes per row on medium screens */
+  }
+}
+
+/* Responsive adjustments for small screens (e.g., phones) */
+@media (max-width: 480px) {
+  .info-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 boxes per row on medium screens */
+  }
+}

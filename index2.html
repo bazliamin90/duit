@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duit tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="bodystyle.css">
+  <link rel="stylesheet" href="filterstyle.css">
+  <link rel="stylesheet" href="gridstyle.css">
+  <link rel="stylesheet" href="displaybox.css">
+  <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+  <script src="nav.js"></script>
+
+  <style>
+    label {
+      color: #1a73e8;
+      font-weight: bold;
+      display: block;
+      margin-top: 1rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 5px 10px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+<body>
+  <h3><a href="index.html" class="header">Duit Tracker</a></h3>
+  <center><h5>-Form-</h5></center>
+  <hr>
+  <header-component></header-component>
+
+  <form id="expenseForm">
+    <label>Password</label>
+    <input type="password" name="password" required>
+
+    <label>Tarikh</label>
+    <input type="date" name="tarikh" required>
+
+    <label>Perkara</label>
+    <div class="radio-group">
+      <input type="radio" name="perkara" value="in" required> in
+      <br><input type="radio" name="perkara" value="out"> out
+    </div>
+
+    <label>RM</label>
+    <input type="number" step="0.01" name="rm" required>
+
+    <label>Cara</label>
+    <div class="radio-group">
+      <input type="radio" name="cara" value="transfer" required> transfer
+      <br><input type="radio" name="cara" value="cash"> cash
+    </div>
+
+    <label>Untuk apa</label>
+    <div class="radio-group">
+      <input type="radio" name="untukApa" value="belanja rahman dahlia" required> belanja rahman dahlia
+      <br><input type="radio" name="untukApa" value="kelas"> kelas
+      <br><input type="radio" name="untukApa" value="minyak kereta"> minyak kereta
+      <br><input type="radio" name="untukApa" value="others"> others:
+	  <input type="text" name="other" placeholder="Nyatakan..." />
+    </div>
+    
+
+  <div style="display: flex; align-items: center; margin-top: 1.5rem;">
+    <button type="submit">Submit</button>
+    <button type="reset" style="margin-left: 1rem; background: #e53935;">Reset</button>
+  </div>
+  </form>
+
+<br><br><br>
+
+  <script>
+    document.getElementById("expenseForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = new FormData(form);
+
+      fetch("https://script.google.com/macros/s/AKfycbx7bVySy2H3n6uxrVaXvxYHqUJjRprZuTpzFSvZnvMZnKDNmi6h0H1LltMTl5X2l5vi/exec", {
+        method: "POST",
+        body: data
+      })
+      .then(res => res.text())
+      .then(response => {
+        if (response.startsWith("Error")) {
+          alert(response);
+        } else {
+          alert("Submitted successfully!");
+          form.reset();
+        }
+      })
+      .catch(err => {
+        console.error("Submission error:", err.message);
+        alert("Something went wrong.");
+      });
+    });
+  </script>
+</body>
+</html>
