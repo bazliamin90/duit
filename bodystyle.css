@@ -38,3 +38,35 @@ li {
 	width: fit-content;
   }
   
+  .stt {
+	position: fixed;
+	bottom: 50px;
+	right: 400px;
+	z-index: 9;
+	padding: 5px 5px;
+	font-size: 12px;
+	text-align: center;
+	background-color: white;
+	border: 1px solid grey;
+	border-radius: 5px;
+	color: grey;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+	text-decoration: none;
+}
+
+.stt:active {
+	color: white;
+	background-color: black;
+}
+
+@media (max-width: 800px) {	
+    .stt {
+        right: 40px;
+        }
+    }
+
+@media screen and (max-width: 500px) {
+    .stt {
+		right: 10px;	
+	}
+}

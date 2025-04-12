@@ -60,7 +60,7 @@
   border-radius: 5px;
 }
 
-#grid .gridjs-pagination button:hover {
+#grid .gridjs-pagination button:active {
   background-color: rgb(142, 142, 255);
   color: #fff; /* Change text color on hover */
 }
