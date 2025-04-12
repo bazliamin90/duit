@@ -116,6 +116,7 @@ headerTemplate.innerHTML = `
       <ol id="list">
           <li><a href="index.html">Data</a></li>
           <li><a href="index2.html">Form</a></li>
+          <li><a href="index3.html">Panduan bina</a></li>
       </ol>
   </div>
 `;

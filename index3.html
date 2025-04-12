@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duit tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="bodystyle.css">
+  <link rel="stylesheet" href="filterstyle.css">
+  <link rel="stylesheet" href="gridstyle.css">
+  <link rel="stylesheet" href="displaybox.css">
+  <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+  <script src="nav.js"></script>
+
+  <style></style>
+
+</head>
+<body>
+  <h3><a href="index.html" class="header">Duit Tracker</a></h3>
+  <center><h5>-Panduan bina-</h5></center>
+  <hr>
+  <header-component></header-component>
+
+  <h3>Ringkasan bina laman ini</h3>
+  <h5>(Kena log in gdrive <a href="https://drive.google.com/drive/folders/1XUKm19_fZNh_ukaogyZDy38-3dWdZ6Cx" target="_blank">peribadi</a> untuk view certain files.)</h5>
+  <ol>
+    <li>Set up <a href="https://docs.google.com/spreadsheets/d/1ZneNErIk4NLVtIQskxU-e-_qNatTHKPkE-i6X1vYa_E/edit?usp=drive_link" target="_blank">google sheets</a>.
+      <ul>
+        <li>Isi headers di row 1.</li>
+        <li>Isi password di h1.</li>
+        <li>Buat apps script melalui Extensions. Rujuk <a href="https://script.google.com/u/0/home/projects/1hIzmffW8sVEQTEkj6Jbfb5FfZZNcK_6H4jqKI6mgcHix0fdNwL7ylTZb/edit" target="_blank">sini</a>, kemudian buat web app.</li>
+        <li>Simpan url web app tu (ends with "exec"). Ini akan dipakai dalam codes <b>table</b> nanti.</li>
+      </ul>
+    </li>
+    <br>
+    <li>Buat apps script external. Rujuk <a href="https://script.google.com/home/projects/1u-fOuHSWdfDA2EK3c9WVXhYMofkf-7OnksODEYu7qIW5rLIyk6fvHwei/edit" target="_blank">sini</a>.
+      <ul>
+        <li>Dalam apps script, kena isi google sheets ID. (selepas <b>/d/</b>, sebelum <b>/edit</b>)</li>
+        <li>Di <b>const selectedColumns =</b>, isikan column yang akan appear di table.</li>
+        <li>Deploy dan simpan url web app. Ini akan dipakai dalam codes <b>custom form</b> nanti.</li>
+      </ul>
+    </li>
+    <br>
+    <li>Buat <b>index.html</b>. Ini untuk table. Rujuk <a href="https://github.com/bazliamin90/duit/blob/main/index.html" target="_blank">sini</a>.</li>
+    <li>Buat <b>index2.html</b>. Ini untuk form. Rujuk <a href="https://github.com/bazliamin90/duit/blob/main/index2.html" target="_blank">sini</a>.</li>
+  </ol>
+  <br><br><br>
+
+  <script></script>
+</body>
+</html>
