@@ -25,8 +25,8 @@
 
 /* Highlight table header */
 #grid .gridjs-th {
-  background-color: #4CAF50; /* Green header background */
-  color: #fff; /* White header text */
+  background-color: #ffc5fa;
+  color: #000000;
   font-weight: bold;
   text-align: center;
   border-bottom: 2px solid #ccc; /* Subtle bottom border */
@@ -51,8 +51,8 @@
 
 /* Customize pagination buttons */
 #grid .gridjs-pagination button {
-  background-color: #4CAF50; /* Green buttons */
-  color: #fff;
+  background-color: #ffc5fa;
+  color: #000000;
   border: none;
   padding: 5px 10px;
   margin: 0 2px;
@@ -61,5 +61,6 @@
 }
 
 #grid .gridjs-pagination button:hover {
-  background-color: #45a049; /* Darker green on hover */
+  background-color: rgb(142, 142, 255);
+  color: #fff; /* Change text color on hover */
 }
