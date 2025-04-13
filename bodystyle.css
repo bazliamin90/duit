@@ -23,7 +23,11 @@ h3, h5, ol, ul {
 }
 
 li {
-	margin-top: 5px;
+	padding: 5px 0;
+}
+
+ol, ul {
+	padding: 0 5px 0 25px;
 }
 
 #reset-button {
@@ -42,6 +46,20 @@ li {
 	width: fit-content;
   }
   
+#expenseForm {
+	border: 2px solid #ffa920;
+	border-radius: 8px;
+	padding: 10px 15px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#panduan {
+	border: 2px solid #ffa920;
+	border-radius: 8px;
+	padding: 10px 15px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
   .stt {
 	position: fixed;
 	bottom: 50px;
