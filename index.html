@@ -86,43 +86,42 @@
 
         rawData = data;
 
-        // Extract headers and rows
-        const headers = Object.keys(data[0]);
-        const rows = data
+  // Extract headers and rows
+  const headers = Object.keys(data[0]);
+  const rows = data
   .map(row => Object.values(row))
   .sort((a, b) => {
-    const parseDate = (str) => {
-      const [day, month, year] = str.split('/');
-      return new Date(`${year}-${month}-${day}`);
-    };
-    return parseDate(b[0]) - parseDate(a[0]); // Descending by Tarikh (column 0)
+  const parseDate = (str) => {
+  const [day, month, year] = str.split('/');
+  return new Date(`${year}-${month}-${day}`);
+  };
+  return parseDate(b[0]) - parseDate(a[0]); // Descending by Tarikh (column 0)
   });
 
+  // Populate Perkara filter with unique values
+  const columnIndexMTQ = 1; // 0-based index for column 7 (MTQ)
+  const uniqueMTQValues = Array.from(new Set(rows.map(row => row[columnIndexMTQ])));
+  const mtqFilter = document.getElementById('mtq-filter');
+  uniqueMTQValues.forEach(value => {
+  const option = document.createElement('option');
+  option.value = value;
+  option.textContent = value;
+  mtqFilter.appendChild(option);
+  });
 
-        // Populate Perkara filter with unique values
-        const columnIndexMTQ = 1; // 0-based index for column 7 (MTQ)
-        const uniqueMTQValues = Array.from(new Set(rows.map(row => row[columnIndexMTQ])));
-        const mtqFilter = document.getElementById('mtq-filter');
-        uniqueMTQValues.forEach(value => {
-          const option = document.createElement('option');
-          option.value = value;
-          option.textContent = value;
-          mtqFilter.appendChild(option);
-        });
-
-        // Populate Cara filter with unique values
-        const columnIndexJantina = 3; // 0-based index for column 6 (JANTINA)
-        const uniqueJantinaValues = Array.from(new Set(rows.map(row => row[columnIndexJantina])));
-        const jantinaFilter = document.getElementById('jantina-filter');
-        uniqueJantinaValues.forEach(value => {
-          const option = document.createElement('option');
-          option.value = value;
-          option.textContent = value;
-          jantinaFilter.appendChild(option);
-        });
+  // Populate Cara filter with unique values
+  const columnIndexJantina = 3; // 0-based index for column 6 (JANTINA)
+  const uniqueJantinaValues = Array.from(new Set(rows.map(row => row[columnIndexJantina])));
+  const jantinaFilter = document.getElementById('jantina-filter');
+  uniqueJantinaValues.forEach(value => {
+  const option = document.createElement('option');
+  option.value = value;
+  option.textContent = value;
+  jantinaFilter.appendChild(option);
+  });
       
-// Initialize Grid.js
-gridInstance = new gridjs.Grid({
+  // Initialize Grid.js
+  gridInstance = new gridjs.Grid({
   columns: headers,
   data: rows,
   search: true,
@@ -136,10 +135,11 @@ gridInstance = new gridjs.Grid({
       placeholder: 'Cari sesuatu...'
     }
   }
-}).render(document.getElementById('grid'));
+  }).render(document.getElementById('grid'));
 
-        // Function to update statistics display
-const updateStatistics = (filteredRows) => {
+  // Function to update statistics display
+  const updateStatistics = (filteredRows) => {
+  
   // Update row count
   document.getElementById('row-count').textContent = filteredRows.length;
 
@@ -154,39 +154,34 @@ const updateStatistics = (filteredRows) => {
     .filter(row => row[1]?.toLowerCase() === "out")
     .reduce((sum, row) => sum + (parseFloat(row[2]) || 0), 0);
   document.getElementById('column-p-count').textContent = outSum.toFixed(2);
-};
+  };
 
+  // Initial statistics update with all rows
+  updateStatistics(rows);
+  document.getElementById('row-count-box').style.display = 'block';
+  document.getElementById('column-l-box').style.display = 'block';
+  document.getElementById('column-p-box').style.display = 'block';
 
-// Initial statistics update with all rows
-updateStatistics(rows);
-document.getElementById('row-count-box').style.display = 'block';
-document.getElementById('column-l-box').style.display = 'block';
-document.getElementById('column-p-box').style.display = 'block';
+  // 👇 Add this line to show summary from the start
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+  updateSummary(startDate, endDate);
 
-// 👇 Add this line to show summary from the start
-const startDate = document.getElementById('start-date').value;
-const endDate = document.getElementById('end-date').value;
-updateSummary(startDate, endDate);
-
-        // Function to filter rows based on dropdown selections
-        const applyFilters = () => {
+  // Function to filter rows based on dropdown selections
+  const applyFilters = () => {
   const selectedMTQ = mtqFilter.value;
   const selectedJantina = jantinaFilter.value;
   const startDate = document.getElementById('start-date').value;
   const endDate = document.getElementById('end-date').value;
-
   const filteredRows = rows.filter(row => {
-    const matchesMTQ = selectedMTQ === 'all' || row[columnIndexMTQ] === selectedMTQ;
-    const matchesJantina = selectedJantina === 'all' || row[columnIndexJantina] === selectedJantina;
+  const matchesMTQ = selectedMTQ === 'all' || row[columnIndexMTQ] === selectedMTQ;
+  const matchesJantina = selectedJantina === 'all' || row[columnIndexJantina] === selectedJantina;
+  const [day, month, year] = row[columnIndexDate].split('/');
+  const rowDateObj = new Date(`${year}-${month}-${day}`); 
+  const withinStart = !startDate || rowDateObj >= new Date(startDate);
+  const withinEnd = !endDate || rowDateObj <= new Date(endDate);
 
-    const [day, month, year] = row[columnIndexDate].split('/');
-    const rowDateObj = new Date(`${year}-${month}-${day}`);
-   
-    const withinStart = !startDate || rowDateObj >= new Date(startDate);
-    const withinEnd = !endDate || rowDateObj <= new Date(endDate);
-
-    return matchesMTQ && matchesJantina && withinStart && withinEnd;
-
+  return matchesMTQ && matchesJantina && withinStart && withinEnd;
   });
 
   gridInstance.updateConfig({ data: filteredRows }).forceRender();
@@ -197,25 +192,23 @@ updateSummary(startDate, endDate);
 
   // Fix table layout
   setTimeout(() => {
-    const table = document.querySelector('#grid .gridjs-table');
-    if (table) {
-      table.style.width = '100%';
-      table.style.tableLayout = 'auto';
-    }
+  const table = document.querySelector('#grid .gridjs-table');
+  if (table) {
+  table.style.width = '100%';
+  table.style.tableLayout = 'auto';
+  }
   }, 50);
-};
+  };
 
-        // Reset filters and statistics
-        const resetFilters = () => {
+  // Reset filters and statistics
+  const resetFilters = () => {
   mtqFilter.value = 'all';
   jantinaFilter.value = 'all';
   document.getElementById('start-date').value = '';
   document.getElementById('end-date').value = '';
-
   gridInstance.updateConfig({
     data: rows,
   }).forceRender();
-
   updateStatistics(rows);
 
   // Reset the summary text
@@ -229,41 +222,36 @@ updateSummary(startDate, endDate);
       table.style.tableLayout = 'auto'; // keep columns flexible
     }
   }, 50);
-};
+  };
 
-// Add event listeners for filters
-mtqFilter.addEventListener('change', applyFilters);
-jantinaFilter.addEventListener('change', applyFilters);
-document.getElementById('start-date').addEventListener('change', applyFilters);
-document.getElementById('end-date').addEventListener('change', applyFilters);
+  // Add event listeners for filters
+  mtqFilter.addEventListener('change', applyFilters);
+  jantinaFilter.addEventListener('change', applyFilters);
+  document.getElementById('start-date').addEventListener('change', applyFilters);
+  document.getElementById('end-date').addEventListener('change', applyFilters);
 
-        // Add event listener for reset button
-        document.getElementById('reset-button').addEventListener('click', resetFilters);
-      })
-      .catch(err => {
-        console.error('Error fetching data:', err);
-        document.getElementById('loading').textContent = 'Failed to load data.';
-      });
-
-      function updateSummary(startDate, endDate) {
+  // Add event listener for reset button
+  document.getElementById('reset-button').addEventListener('click', resetFilters);
+  })
+    .catch(err => {
+  console.error('Error fetching data:', err);
+  document.getElementById('loading').textContent = 'Failed to load data.';
+  });
+  function updateSummary(startDate, endDate) {
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
+  const d = new Date(dateStr);
     return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
   };
   const start = formatDate(startDate);
   const end = formatDate(endDate);
-
   const styledStart = start ? `<span style="color:red;">${start}</span>` : '-';
   const styledEnd = end ? `<span style="color:red;">${end}</span>` : '-';
-
   const summary = (start || end) 
     ? `Penyata perbelanjaan dari ${styledStart} hingga ${styledEnd}:`
-    : 'Penyata perbelanjaan untuk semua tarikh:';
-    
+    : 'Penyata perbelanjaan untuk semua tarikh:';    
   document.getElementById('summary').innerHTML = summary;
 }
-
   </script>
 </body>
 </html>
