@@ -54,6 +54,7 @@ ol, ul {
 }
 
 #panduan {
+	margin: 10px 0;
 	border: 2px solid #ffa920;
 	border-radius: 8px;
 	padding: 10px 15px;

@@ -29,35 +29,38 @@
     </div>
   </div>
   
-<div class="filtercontainer">
-  <div>
-    <label for="start-date">Dari:</label>
-    <input type="date" id="start-date">
+  <div class="filtercontainer">
+    <div>
+      <label for="start-date">Dari:</label>
+      <input type="date" id="start-date">
+    </div>
+    <div>
+      <label for="end-date">Hingga:</label>
+      <input type="date" id="end-date">
+    </div> 
   </div>
-  <div>
-    <label for="end-date">Hingga:</label>
-    <input type="date" id="end-date">
-  </div> 
-</div>
 
 <br>
-<div class="filtercontainer">
-  <div>
-    <button id="reset-button">Reset</button>
+  <div class="filtercontainer">
+    <div>
+      <button id="reset-button">Reset</button>
+    </div>
   </div>
-</div>
 
-<div id="summary" style="text-align:center; font-weight: bold; margin-top: 15px;"></div>
+  <div id="summary" style="text-align:center; font-weight: bold; margin-top: 15px;"></div>
 
-  <div class="info-container">
-    <div id="row-count-box" class="info-box" style="display: none;">
-      Data:<br><span id="row-count">0</span>
-    </div>
-    <div id="column-l-box" class="info-box" style="display: none;">
-      In:<br>RM <span id="column-l-count">0</span>
-    </div>
-    <div id="column-p-box" class="info-box" style="display: none;">
-      Out:<br>RM <span id="column-p-count">0</span>
+  <div id="panduan">
+    <h3>Ringkasan</h3>
+    <div class="info-container">
+      <div id="row-count-box" class="info-box" style="display: none;">
+        Transaksi:<br><span id="row-count">0</span>
+      </div>
+      <div id="column-l-box" class="info-box" style="display: none;">
+        In:<br>RM <span id="column-l-count">0</span>
+      </div>
+      <div id="column-p-box" class="info-box" style="display: none;">
+        Out:<br>RM <span id="column-p-count">0</span>
+      </div>
     </div>
   </div>
 
@@ -65,7 +68,7 @@
   <div id="grid"></div>
 
   <a href="#" class="stt" title="Scroll to top" aria-label="Scroll to top">▲</a>
-<br><br><br>
+  <br><br><br>
 
   <script>
     const sheetUrl = "https://script.google.com/macros/s/AKfycbxo5sRItvMoK429tMWJZdbMkpSZ36VYo0_04AZhuzmkuLzfIDM5Z8dRc-hFCjwRq3FW/exec";

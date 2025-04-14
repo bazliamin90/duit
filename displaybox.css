@@ -4,7 +4,6 @@
   grid-template-columns: repeat(3, 1fr); /* Default: 3 columns per row */
   gap: 15px;
   margin: 10px auto;
-  max-width: 90%;
 }
 
 /* Individual box styles */
