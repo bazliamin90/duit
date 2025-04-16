@@ -28,7 +28,7 @@
       <select id="jantina-filter"><option value="all">All</option></select>
     </div>
   </div>
-  
+
   <div class="filtercontainer">
     <div>
       <label for="start-date">Dari:</label>
@@ -40,7 +40,7 @@
     </div> 
   </div>
 
-<br>
+  <br>
   <div class="filtercontainer">
     <div>
       <button id="reset-button">Reset</button>
@@ -50,7 +50,7 @@
   <div id="summary" style="text-align:center; font-weight: bold; margin-top: 15px;"></div>
 
   <div id="panduan">
-    <h3>Ringkasan</h3>
+    <h3 id="red">Ringkasan</h3>
     <div class="info-container">
       <div id="row-count-box" class="info-box" style="display: none;">
         Transaksi:<br><span id="row-count">0</span>
@@ -62,6 +62,9 @@
         Out:<br>RM <span id="column-p-count">0</span>
       </div>
     </div>
+    <hr>
+    <h3 id="red">Perbelanjaan</h3>
+    <div id="grouped-out-summary" style="margin: 20px; font-size: 0.95rem;"></div>
   </div>
 
   <div id="loading">Loading data...</div>
@@ -75,7 +78,8 @@
 
     let gridInstance;
     let rawData = [];
-    const columnIndexDate = 0; // needed for Start/End Tarikh filtering
+    let headers = [];
+    const columnIndexDate = 0;
 
     fetch(sheetUrl)
       .then(response => response.json())
@@ -89,172 +93,226 @@
 
         rawData = data;
 
-  // Extract headers and rows
-  const headers = Object.keys(data[0]);
-  const rows = data
-  .map(row => Object.values(row))
-  .sort((a, b) => {
-  const parseDate = (str) => {
-  const [day, month, year] = str.split('/');
-  return new Date(`${year}-${month}-${day}`);
-  };
-  return parseDate(b[0]) - parseDate(a[0]); // Descending by Tarikh (column 0)
-  });
+        headers = Object.keys(data[0]);
+        const rows = data
+          .map(row => Object.values(row))
+          .sort((a, b) => {
+            const [dayA, monthA, yearA] = a[0].split('/');
+            const [dayB, monthB, yearB] = b[0].split('/');
+            return new Date(`${yearB}-${monthB}-${dayB}`) - new Date(`${yearA}-${monthA}-${dayA}`);
+          });
 
-  // Populate Perkara filter with unique values
-  const columnIndexMTQ = 1; // 0-based index for column 7 (MTQ)
-  const uniqueMTQValues = Array.from(new Set(rows.map(row => row[columnIndexMTQ])));
-  const mtqFilter = document.getElementById('mtq-filter');
-  uniqueMTQValues.forEach(value => {
-  const option = document.createElement('option');
-  option.value = value;
-  option.textContent = value;
-  mtqFilter.appendChild(option);
-  });
+        const columnIndexMTQ = 1;
+        const columnIndexJantina = 3;
 
-  // Populate Cara filter with unique values
-  const columnIndexJantina = 3; // 0-based index for column 6 (JANTINA)
-  const uniqueJantinaValues = Array.from(new Set(rows.map(row => row[columnIndexJantina])));
-  const jantinaFilter = document.getElementById('jantina-filter');
-  uniqueJantinaValues.forEach(value => {
-  const option = document.createElement('option');
-  option.value = value;
-  option.textContent = value;
-  jantinaFilter.appendChild(option);
-  });
-      
-  // Initialize Grid.js
-  gridInstance = new gridjs.Grid({
-  columns: headers,
-  data: rows,
-  search: true,
-  sort: true,
-  pagination: {
-    enabled: true,
-    limit: 10,
-  },
-  language: {
-    search: {
-      placeholder: 'Cari sesuatu...'
+        // Populate filters
+        const uniqueMTQValues = Array.from(new Set(rows.map(row => row[columnIndexMTQ])));
+        const mtqFilter = document.getElementById('mtq-filter');
+        uniqueMTQValues.forEach(value => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          mtqFilter.appendChild(option);
+        });
+
+        const uniqueJantinaValues = Array.from(new Set(rows.map(row => row[columnIndexJantina])));
+        const jantinaFilter = document.getElementById('jantina-filter');
+        uniqueJantinaValues.forEach(value => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          jantinaFilter.appendChild(option);
+        });
+
+        // Grid.js
+        gridInstance = new gridjs.Grid({
+          columns: headers,
+          data: rows,
+          search: true,
+          sort: true,
+          pagination: {
+            enabled: true,
+            limit: 10,
+          },
+          language: {
+            search: { placeholder: 'Cari sesuatu...' }
+          }
+        }).render(document.getElementById('grid'));
+        setTimeout(() => {
+  const container = document.querySelector('#grid .gridjs-container');
+  if (container) {
+    const searchSection = container.querySelector('.gridjs-search');
+    if (searchSection) {
+      const heading = document.createElement('h3');
+      heading.textContent = 'Item mengikut tarikh';
+      heading.style.color = 'red';
+      heading.style.fontFamily = 'monospace';
+      searchSection.parentNode.insertBefore(heading, searchSection);
     }
   }
-  }).render(document.getElementById('grid'));
+}, 50);
 
-  // Function to update statistics display
-  const updateStatistics = (filteredRows) => {
-  
-  // Update row count
-  document.getElementById('row-count').textContent = filteredRows.length;
+        updateStatistics(rows);
+        showGroupedOutSummary(rows);
+        document.getElementById('row-count-box').style.display = 'block';
+        document.getElementById('column-l-box').style.display = 'block';
+        document.getElementById('column-p-box').style.display = 'block';
+        updateSummary('', '');
 
-  // Sum of RM (column 3) where column 2 is "in"
-  const inSum = filteredRows
-    .filter(row => row[1]?.toLowerCase() === "in")
-    .reduce((sum, row) => sum + (parseFloat(row[2]) || 0), 0);
-  document.getElementById('column-l-count').textContent = inSum.toFixed(2);
+        const applyFilters = () => {
+          const selectedMTQ = mtqFilter.value;
+          const selectedJantina = jantinaFilter.value;
+          const startDate = document.getElementById('start-date').value;
+          const endDate = document.getElementById('end-date').value;
 
-  // Sum of RM (column 3) where column 2 is "out"
-  const outSum = filteredRows
-    .filter(row => row[1]?.toLowerCase() === "out")
-    .reduce((sum, row) => sum + (parseFloat(row[2]) || 0), 0);
-  document.getElementById('column-p-count').textContent = outSum.toFixed(2);
-  };
+          const filteredRows = rows.filter(row => {
+            const matchesMTQ = selectedMTQ === 'all' || row[columnIndexMTQ] === selectedMTQ;
+            const matchesJantina = selectedJantina === 'all' || row[columnIndexJantina] === selectedJantina;
+            const [day, month, year] = row[columnIndexDate].split('/');
+            const rowDateObj = new Date(`${year}-${month}-${day}`);
+            const withinStart = !startDate || rowDateObj >= new Date(startDate);
+            const withinEnd = !endDate || rowDateObj <= new Date(endDate);
+            return matchesMTQ && matchesJantina && withinStart && withinEnd;
+          });
 
-  // Initial statistics update with all rows
-  updateStatistics(rows);
-  document.getElementById('row-count-box').style.display = 'block';
-  document.getElementById('column-l-box').style.display = 'block';
-  document.getElementById('column-p-box').style.display = 'block';
+          gridInstance.updateConfig({ data: filteredRows }).forceRender();
+          updateStatistics(filteredRows);
+          showGroupedOutSummary(filteredRows);
+          updateSummary(startDate, endDate);
 
-  // 👇 Add this line to show summary from the start
-  const startDate = document.getElementById('start-date').value;
-  const endDate = document.getElementById('end-date').value;
-  updateSummary(startDate, endDate);
+          setTimeout(() => {
+            const table = document.querySelector('#grid .gridjs-table');
+            if (table) {
+              table.style.width = '100%';
+              table.style.tableLayout = 'auto';
+            }
+          }, 50);
+        };
 
-  // Function to filter rows based on dropdown selections
-  const applyFilters = () => {
-  const selectedMTQ = mtqFilter.value;
-  const selectedJantina = jantinaFilter.value;
-  const startDate = document.getElementById('start-date').value;
-  const endDate = document.getElementById('end-date').value;
-  const filteredRows = rows.filter(row => {
-  const matchesMTQ = selectedMTQ === 'all' || row[columnIndexMTQ] === selectedMTQ;
-  const matchesJantina = selectedJantina === 'all' || row[columnIndexJantina] === selectedJantina;
-  const [day, month, year] = row[columnIndexDate].split('/');
-  const rowDateObj = new Date(`${year}-${month}-${day}`); 
-  const withinStart = !startDate || rowDateObj >= new Date(startDate);
-  const withinEnd = !endDate || rowDateObj <= new Date(endDate);
+        const resetFilters = () => {
+          mtqFilter.value = 'all';
+          jantinaFilter.value = 'all';
+          document.getElementById('start-date').value = '';
+          document.getElementById('end-date').value = '';
+          gridInstance.updateConfig({ data: rows }).forceRender();
+          updateStatistics(rows);
+          showGroupedOutSummary(rows);
+          updateSummary('', '');
 
-  return matchesMTQ && matchesJantina && withinStart && withinEnd;
-  });
+          setTimeout(() => {
+            const table = document.querySelector('#grid .gridjs-table');
+            if (table) {
+              table.style.width = '100%';
+              table.style.tableLayout = 'auto';
+            }
+          }, 50);
+        };
 
-  gridInstance.updateConfig({ data: filteredRows }).forceRender();
-  updateStatistics(filteredRows);
+        mtqFilter.addEventListener('change', applyFilters);
+        jantinaFilter.addEventListener('change', applyFilters);
+        document.getElementById('start-date').addEventListener('change', applyFilters);
+        document.getElementById('end-date').addEventListener('change', applyFilters);
+        document.getElementById('reset-button').addEventListener('click', resetFilters);
+      })
+      .catch(err => {
+        console.error('Error fetching data:', err);
+        document.getElementById('loading').textContent = 'Failed to load data.';
+      });
 
-  // Update the summary box
-  updateSummary(startDate, endDate);
-
-  // Fix table layout
-  setTimeout(() => {
-  const table = document.querySelector('#grid .gridjs-table');
-  if (table) {
-  table.style.width = '100%';
-  table.style.tableLayout = 'auto';
-  }
-  }, 50);
-  };
-
-  // Reset filters and statistics
-  const resetFilters = () => {
-  mtqFilter.value = 'all';
-  jantinaFilter.value = 'all';
-  document.getElementById('start-date').value = '';
-  document.getElementById('end-date').value = '';
-  gridInstance.updateConfig({
-    data: rows,
-  }).forceRender();
-  updateStatistics(rows);
-
-  // Reset the summary text
-  updateSummary('', '');
-
-  // 💡 Fix compressed table issue by forcing full width
-  setTimeout(() => {
-    const table = document.querySelector('#grid .gridjs-table');
-    if (table) {
-      table.style.width = '100%';
-      table.style.tableLayout = 'auto'; // keep columns flexible
+    function updateStatistics(filteredRows) {
+      const inSum = filteredRows
+        .filter(row => row[1]?.toLowerCase() === "in")
+        .reduce((sum, row) => sum + (parseFloat(row[2]) || 0), 0);
+      const outSum = filteredRows
+        .filter(row => row[1]?.toLowerCase() === "out")
+        .reduce((sum, row) => sum + (parseFloat(row[2]) || 0), 0);
+      document.getElementById('row-count').textContent = filteredRows.length;
+      document.getElementById('column-l-count').textContent = inSum.toFixed(2);
+      document.getElementById('column-p-count').textContent = outSum.toFixed(2);
     }
-  }, 50);
-  };
 
-  // Add event listeners for filters
-  mtqFilter.addEventListener('change', applyFilters);
-  jantinaFilter.addEventListener('change', applyFilters);
-  document.getElementById('start-date').addEventListener('change', applyFilters);
-  document.getElementById('end-date').addEventListener('change', applyFilters);
+    function updateSummary(startDate, endDate) {
+      const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+      };
+      const start = formatDate(startDate);
+      const end = formatDate(endDate);
+      const styledStart = start ? `<span style="color:red;">${start}</span>` : '-';
+      const styledEnd = end ? `<span style="color:red;">${end}</span>` : '-';
+      const summary = (start || end)
+        ? `Penyata perbelanjaan dari ${styledStart} hingga ${styledEnd}:`
+        : 'Penyata perbelanjaan untuk semua tarikh:';
+      document.getElementById('summary').innerHTML = summary;
+    }
 
-  // Add event listener for reset button
-  document.getElementById('reset-button').addEventListener('click', resetFilters);
-  })
-    .catch(err => {
-  console.error('Error fetching data:', err);
-  document.getElementById('loading').textContent = 'Failed to load data.';
+    function showGroupedOutSummary(filteredRows) {
+  const untukApaIndex = headers.findIndex(h => h.toLowerCase().includes("untuk"));
+  const perkaraIndex = headers.findIndex(h => h.toLowerCase() === "perkara");
+  const rmIndex = headers.findIndex(h => h.toLowerCase() === "rm");
+
+  const groupMap = {};
+
+  filteredRows.forEach(row => {
+    const perkara = row[perkaraIndex]?.toLowerCase();
+    if (perkara !== "out") return;
+
+    const rawValue = row[untukApaIndex] || "";
+    const normalized = rawValue.toLowerCase().trim().replace(/\s+/g, ' ');
+    const amount = parseFloat(row[rmIndex]) || 0;
+
+    groupMap[normalized] = (groupMap[normalized] || 0) + amount;
   });
-  function updateSummary(startDate, endDate) {
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-  const d = new Date(dateStr);
-    return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+
+  const sortedEntries = Object.entries(groupMap).sort((a, b) => b[1] - a[1]);
+
+  const pageSize = 10;
+  let currentPage = 1;
+
+  const renderPage = () => {
+    const start = (currentPage - 1) * pageSize;
+    const paginated = sortedEntries.slice(start, start + pageSize);
+
+    const listHtml = paginated.map(([label, total]) =>
+      `<li><strong>${label}</strong>: RM ${total.toFixed(2)}</li>`
+    ).join('');
+
+    const totalPages = Math.ceil(sortedEntries.length / pageSize);
+    const paginationHtml = `
+  <div style="text-align:center; margin-top: 10px;">
+    <button class="page-btn" data-page="prev" ${currentPage === 1 ? 'disabled style="opacity:0.5; cursor: not-allowed;"' : ''}>Prev</button>
+    ${Array.from({ length: totalPages }, (_, i) => 
+      `<button class="page-btn" data-page="${i + 1}" ${i + 1 === currentPage ? 'style="font-weight:bold;"' : ''}>${i + 1}</button>`
+    ).join('')}
+    <button class="page-btn" data-page="next" ${currentPage === totalPages ? 'disabled style="opacity:0.5; cursor: not-allowed;"' : ''}>Next</button>
+  </div>
+`;
+
+    document.getElementById('grouped-out-summary').innerHTML = `
+      <ol style="padding-left: 20px;" start="${start + 1}">${listHtml}</ol>
+      ${paginationHtml}
+    `;
+
+    // Add event listeners to pagination buttons
+    document.querySelectorAll('.page-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.getAttribute('data-page');
+        if (action === 'prev' && currentPage > 1) {
+          currentPage--;
+        } else if (action === 'next' && currentPage < totalPages) {
+          currentPage++;
+        } else if (!isNaN(parseInt(action))) {
+          currentPage = parseInt(action);
+        }
+        renderPage();
+      });
+    });
   };
-  const start = formatDate(startDate);
-  const end = formatDate(endDate);
-  const styledStart = start ? `<span style="color:red;">${start}</span>` : '-';
-  const styledEnd = end ? `<span style="color:red;">${end}</span>` : '-';
-  const summary = (start || end) 
-    ? `Penyata perbelanjaan dari ${styledStart} hingga ${styledEnd}:`
-    : 'Penyata perbelanjaan untuk semua tarikh:';    
-  document.getElementById('summary').innerHTML = summary;
-  }
+
+  renderPage();
+}
+
   </script>
 </body>
 </html>

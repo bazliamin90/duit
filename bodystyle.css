@@ -22,6 +22,10 @@ h3, h5, ol, ul {
 	color: #555;
 }
 
+#red {
+	color: red;
+}
+
 li {
 	padding: 5px 0;
 }
