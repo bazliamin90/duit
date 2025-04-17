@@ -176,6 +176,7 @@
           });
 
           gridInstance.updateConfig({ data: filteredRows }).forceRender();
+          insertGridHeading();
           updateStatistics(filteredRows);
           showGroupedOutSummary(filteredRows);
           updateSummary(startDate, endDate);
@@ -195,6 +196,7 @@
           document.getElementById('start-date').value = '';
           document.getElementById('end-date').value = '';
           gridInstance.updateConfig({ data: rows }).forceRender();
+          insertGridHeading();
           updateStatistics(rows);
           showGroupedOutSummary(rows);
           updateSummary('', '');
@@ -312,7 +314,22 @@
 
   renderPage();
 }
-
+function insertGridHeading() {
+  setTimeout(() => {
+    const container = document.querySelector('#grid .gridjs-container');
+    if (container && !container.querySelector('.grid-heading')) {
+      const searchSection = container.querySelector('.gridjs-search');
+      if (searchSection) {
+        const heading = document.createElement('h3');
+        heading.textContent = 'Item mengikut tarikh';
+        heading.className = 'grid-heading';
+        heading.style.color = '#FF0000';
+        heading.style.fontFamily = 'monospace';
+        searchSection.parentNode.insertBefore(heading, searchSection);
+      }
+    }
+  }, 50);
+}
   </script>
 </body>
 </html>
