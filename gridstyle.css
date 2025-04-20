@@ -4,7 +4,7 @@
   border: 2px solid #4CAF50; /* Green border */
   border-radius: 8px; /* Rounded corners */
   padding: 10px; /* Padding inside the grid */
-  background-color: #f9f9f9; /* Light gray background */
+  background-color: #fff; /* Light gray background */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
 }
 

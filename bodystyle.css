@@ -4,6 +4,7 @@ html {
 
 body {
 	font-family: monospace;
+	background-color: #f0f8ff; /* Light blue */
 	max-width: 700px;
 	margin: 0 auto;
 	padding: 0 10px;
@@ -52,6 +53,7 @@ ol, ul {
   
 #expenseForm {
 	border: 2px solid #ffa920;
+	background-color: #fff;
 	border-radius: 8px;
 	padding: 10px 15px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -63,6 +65,7 @@ ol, ul {
 	border-radius: 8px;
 	padding: 10px 15px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	background-color: #fff;
 }
 
   .stt {

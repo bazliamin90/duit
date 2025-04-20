@@ -67,6 +67,7 @@ headerTemplate.innerHTML = `
         padding: 5px 10px;
         margin: 10px auto;
         color: black;
+        background-color: #fff;
         border: none;
         border-right: 1px solid grey;
         border-bottom: 1px solid grey;
