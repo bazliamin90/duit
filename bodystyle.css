@@ -40,6 +40,30 @@ ol, ul {
 	border-radius: 5px;
 }
 
+#current-month-button {
+	background-color: #ffa920; /* Orange */
+	border-radius: 5px;
+}
+
+input[type="search"],
+#expense-search {
+  padding: 4px 10px;
+  font-family: monospace;
+  font-size: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  width: 250px;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="search"]:focus,
+#expense-search:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0,123,255,0.25);
+}
+
 #active-filters {
 	margin-top: 10px;
 	padding: 8px 12px;

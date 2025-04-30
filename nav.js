@@ -32,16 +32,6 @@ headerTemplate.innerHTML = `
         font-style: italic;
     }
 
-    .scroll-box .search-box {
-        width: 90%;
-        padding: 5px;
-        margin-bottom: 10px;
-        font-family: monospace;
-		font-size: 12px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-
     .scroll-box ol {
         font-family: monospace;
 		margin: 0; /* Remove extra margins */
@@ -107,13 +97,6 @@ headerTemplate.innerHTML = `
   <div id="overlay"></div>
   <div class="scroll-box" id="scroll-box">
       <div class="close-message">Click outside this box to close it</div>
-      <input
-        type="text"
-        class="search-box"
-        id="search-box"
-        placeholder="Search..."
-        aria-label="Search list items"
-      />
       <ol id="list">
           <li><a href="index.html">Data</a></li>
           <li><a href="index2.html">Form</a></li>

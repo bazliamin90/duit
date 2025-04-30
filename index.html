@@ -44,7 +44,7 @@
   <div class="filtercontainer">
     <div>
       <button id="reset-button">Reset</button>
-      <button id="current-month-button">Current Month</button>
+      <button id="current-month-button">Bulan Ini</button>
     </div>
   </div>  
 
@@ -64,10 +64,10 @@
       </div>
     </div>
     <hr>
-    <h3 id="red">Perbelanjaan</h3>
-    <div id="grouped-out-summary" style="margin: 20px;"></div>
-  </div>
-
+    <h3 id="red">Perbelanjaan (susunan menurun)</h3>
+<input type="text" id="expense-search" placeholder="Cari perbelanjaan..." style="margin-bottom:10px; padding:5px; width: 80%;">
+<div id="grouped-out-summary" style="margin: 20px;"></div>
+</div>
   <div id="loading">Loading data...</div>
   <div id="grid"></div>
 
@@ -191,25 +191,37 @@
           }, 50);
         };
 
-        const resetFilters = () => {
-          mtqFilter.value = 'all';
-          jantinaFilter.value = 'all';
-          document.getElementById('start-date').value = '';
-          document.getElementById('end-date').value = '';
-          gridInstance.updateConfig({ data: rows }).forceRender();
-          insertGridHeading();
-          updateStatistics(rows);
-          showGroupedOutSummary(rows);
-          updateSummary('', '');
+        function resetFilters() {
+  mtqFilter.value = 'all';
+  jantinaFilter.value = 'all';
+  document.getElementById('start-date').value = '';
+  document.getElementById('end-date').value = '';
 
-          setTimeout(() => {
-            const table = document.querySelector('#grid .gridjs-table');
-            if (table) {
-              table.style.width = '100%';
-              table.style.tableLayout = 'auto';
-            }
-          }, 50);
-        };
+  const gridSearchInput = document.querySelector('#grid input[type="search"]');
+if (gridSearchInput) {
+  gridSearchInput.value = '';
+  gridSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+}
+  // Clear the Perbelanjaan search box
+  const expenseSearch = document.getElementById('expense-search');
+  if (expenseSearch) expenseSearch.value = '';
+
+  // Reset data and display
+  gridInstance.updateConfig({ data: rawData.map(row => Object.values(row)) }).forceRender();
+  insertGridHeading();
+  updateStatistics(rawData.map(row => Object.values(row)));
+  showGroupedOutSummary(rawData.map(row => Object.values(row)));
+  updateSummary('', '');
+
+  setTimeout(() => {
+    const table = document.querySelector('#grid .gridjs-table');
+    if (table) {
+      table.style.width = '100%';
+      table.style.tableLayout = 'auto';
+    }
+  }, 50);
+}
+
         const filterCurrentMonth = () => {
   const today = new Date();
   const currentMonth = String(today.getMonth() + 1).padStart(2, '0'); // e.g., "04"
@@ -278,7 +290,7 @@
   document.getElementById('summary').innerHTML = summary;
 }
 
-    function showGroupedOutSummary(filteredRows) {
+function showGroupedOutSummary(filteredRows) {
   const untukApaIndex = headers.findIndex(h => h.toLowerCase().includes("untuk"));
   const perkaraIndex = headers.findIndex(h => h.toLowerCase() === "perkara");
   const rmIndex = headers.findIndex(h => h.toLowerCase() === "rm");
@@ -300,49 +312,62 @@
 
   const pageSize = 10;
   let currentPage = 1;
+  let currentFilter = '';
 
   const renderPage = () => {
+    const filteredEntries = sortedEntries.filter(([label]) =>
+      label.includes(currentFilter.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredEntries.length / pageSize);
     const start = (currentPage - 1) * pageSize;
-    const paginated = sortedEntries.slice(start, start + pageSize);
+    const paginated = filteredEntries.slice(start, start + pageSize);
 
     const listHtml = paginated.map(([label, total]) =>
       `<li><strong>${label}</strong>: RM ${total.toFixed(2)}</li>`
     ).join('');
 
-    const totalPages = Math.ceil(sortedEntries.length / pageSize);
     const paginationHtml = `
-  <div style="text-align:center; margin-top: 10px;">
-    <button class="page-btn" data-page="prev" ${currentPage === 1 ? 'disabled style="opacity:0.5; cursor: not-allowed;"' : ''}>Prev</button>
-    ${Array.from({ length: totalPages }, (_, i) => 
-      `<button class="page-btn" data-page="${i + 1}" ${i + 1 === currentPage ? 'style="font-weight:bold;"' : ''}>${i + 1}</button>`
-    ).join('')}
-    <button class="page-btn" data-page="next" ${currentPage === totalPages ? 'disabled style="opacity:0.5; cursor: not-allowed;"' : ''}>Next</button>
-  </div>
-`;
+      <div style="text-align:center; margin-top: 10px;">
+        <button class="page-btn" data-page="prev" ${currentPage === 1 ? 'disabled style="opacity:0.5; cursor: not-allowed;"' : ''}>Prev</button>
+        ${Array.from({ length: totalPages }, (_, i) => 
+          `<button class="page-btn" data-page="${i + 1}" ${i + 1 === currentPage ? 'style="font-weight:bold;"' : ''}>${i + 1}</button>`
+        ).join('')}
+        <button class="page-btn" data-page="next" ${currentPage === totalPages ? 'disabled style="opacity:0.5; cursor: not-allowed;"' : ''}>Next</button>
+      </div>
+    `;
 
     document.getElementById('grouped-out-summary').innerHTML = `
       <ol style="padding-left: 20px;" start="${start + 1}">${listHtml}</ol>
       ${paginationHtml}
     `;
 
-    // Add event listeners to pagination buttons
     document.querySelectorAll('.page-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const action = btn.getAttribute('data-page');
-        if (action === 'prev' && currentPage > 1) {
-          currentPage--;
-        } else if (action === 'next' && currentPage < totalPages) {
-          currentPage++;
-        } else if (!isNaN(parseInt(action))) {
-          currentPage = parseInt(action);
-        }
+        if (action === 'prev' && currentPage > 1) currentPage--;
+        else if (action === 'next' && currentPage < totalPages) currentPage++;
+        else if (!isNaN(parseInt(action))) currentPage = parseInt(action);
         renderPage();
       });
     });
   };
 
+  const searchInput = document.getElementById('expense-search');
+  if (searchInput) {
+    searchInput.removeEventListener('input', searchInput._listener || (() => {}));
+    const listener = () => {
+      currentPage = 1;
+      currentFilter = searchInput.value.trim();
+      renderPage();
+    };
+    searchInput._listener = listener;
+    searchInput.addEventListener('input', listener);
+  }
+
   renderPage();
 }
+
 function insertGridHeading() {
   setTimeout(() => {
     const container = document.querySelector('#grid .gridjs-container');
