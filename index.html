@@ -44,8 +44,9 @@
   <div class="filtercontainer">
     <div>
       <button id="reset-button">Reset</button>
+      <button id="current-month-button">Current Month</button>
     </div>
-  </div>
+  </div>  
 
   <div id="summary" style="text-align:center; font-weight: bold; margin-top: 15px;"></div>
 
@@ -209,12 +210,34 @@
             }
           }, 50);
         };
+        const filterCurrentMonth = () => {
+  const today = new Date();
+  const currentMonth = String(today.getMonth() + 1).padStart(2, '0'); // e.g., "04"
+  const currentYear = today.getFullYear(); // e.g., "2025"
+  const targetString = `${currentMonth}/${currentYear}`;
 
+  const filteredRows = rows.filter(row => row[columnIndexDate].includes(targetString));
+
+  gridInstance.updateConfig({ data: filteredRows }).forceRender();
+  insertGridHeading();
+  updateStatistics(filteredRows);
+  showGroupedOutSummary(filteredRows);
+  updateSummary('', '', `${currentMonth}/${currentYear}`);
+  
+  setTimeout(() => {
+    const table = document.querySelector('#grid .gridjs-table');
+    if (table) {
+      table.style.width = '100%';
+      table.style.tableLayout = 'auto';
+    }
+  }, 50);
+};
         mtqFilter.addEventListener('change', applyFilters);
         jantinaFilter.addEventListener('change', applyFilters);
         document.getElementById('start-date').addEventListener('change', applyFilters);
         document.getElementById('end-date').addEventListener('change', applyFilters);
         document.getElementById('reset-button').addEventListener('click', resetFilters);
+        document.getElementById('current-month-button').addEventListener('click', filterCurrentMonth);
       })
       .catch(err => {
         console.error('Error fetching data:', err);
@@ -233,21 +256,27 @@
       document.getElementById('column-p-count').textContent = outSum.toFixed(2);
     }
 
-    function updateSummary(startDate, endDate) {
-      const formatDate = (dateStr) => {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-      };
-      const start = formatDate(startDate);
-      const end = formatDate(endDate);
-      const styledStart = start ? `<span style="color:red;">${start}</span>` : '-';
-      const styledEnd = end ? `<span style="color:red;">${end}</span>` : '-';
-      const summary = (start || end)
-        ? `Penyata perbelanjaan dari ${styledStart} hingga ${styledEnd}:`
-        : 'Penyata perbelanjaan untuk semua tarikh:';
-      document.getElementById('summary').innerHTML = summary;
-    }
+    function updateSummary(startDate, endDate, currentMonthYear = '') {
+  if (currentMonthYear) {
+    document.getElementById('summary').innerHTML =
+      `Penyata perbelanjaan untuk bulan <span style="color:red;">${currentMonthYear}</span>`;
+    return;
+  }
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  };
+  const start = formatDate(startDate);
+  const end = formatDate(endDate);
+  const styledStart = start ? `<span style="color:red;">${start}</span>` : '-';
+  const styledEnd = end ? `<span style="color:red;">${end}</span>` : '-';
+  const summary = (start || end)
+    ? `Penyata perbelanjaan dari ${styledStart} hingga ${styledEnd}:`
+    : 'Penyata perbelanjaan untuk semua tarikh:';
+  document.getElementById('summary').innerHTML = summary;
+}
 
     function showGroupedOutSummary(filteredRows) {
   const untukApaIndex = headers.findIndex(h => h.toLowerCase().includes("untuk"));
