@@ -191,7 +191,7 @@
           }, 50);
         };
 
-        function resetFilters() {
+  function resetFilters() {
   mtqFilter.value = 'all';
   jantinaFilter.value = 'all';
   document.getElementById('start-date').value = '';
@@ -207,10 +207,18 @@ if (gridSearchInput) {
   if (expenseSearch) expenseSearch.value = '';
 
   // Reset data and display
-  gridInstance.updateConfig({ data: rawData.map(row => Object.values(row)) }).forceRender();
+  const sortedRaw = rawData
+  .map(row => Object.values(row))
+  .sort((a, b) => {
+    const [dayA, monthA, yearA] = a[0].split('/');
+    const [dayB, monthB, yearB] = b[0].split('/');
+    return new Date(`${yearB}-${monthB}-${dayB}`) - new Date(`${yearA}-${monthA}-${dayA}`);
+  });
+
+gridInstance.updateConfig({ data: sortedRaw }).forceRender();
   insertGridHeading();
-  updateStatistics(rawData.map(row => Object.values(row)));
-  showGroupedOutSummary(rawData.map(row => Object.values(row)));
+  updateStatistics(sortedRaw);
+showGroupedOutSummary(sortedRaw);
   updateSummary('', '');
 
   setTimeout(() => {
