@@ -177,7 +177,7 @@
           });
 
           gridInstance.updateConfig({ data: filteredRows }).forceRender();
-          insertGridHeading();
+      
           updateStatistics(filteredRows);
           showGroupedOutSummary(filteredRows);
           updateSummary(startDate, endDate);
@@ -222,7 +222,7 @@ if (gridSearchInput) {
   }, 50);
 }
 
-        const filterCurrentMonth = () => {
+  const filterCurrentMonth = () => {
   const today = new Date();
   const currentMonth = String(today.getMonth() + 1).padStart(2, '0'); // e.g., "04"
   const currentYear = today.getFullYear(); // e.g., "2025"
@@ -231,7 +231,7 @@ if (gridSearchInput) {
   const filteredRows = rows.filter(row => row[columnIndexDate].includes(targetString));
 
   gridInstance.updateConfig({ data: filteredRows }).forceRender();
-  insertGridHeading();
+  
   updateStatistics(filteredRows);
   showGroupedOutSummary(filteredRows);
   updateSummary('', '', `${currentMonth}/${currentYear}`);
@@ -250,6 +250,7 @@ if (gridSearchInput) {
         document.getElementById('end-date').addEventListener('change', applyFilters);
         document.getElementById('reset-button').addEventListener('click', resetFilters);
         document.getElementById('current-month-button').addEventListener('click', filterCurrentMonth);
+        document.getElementById('current-month-button').click(); // Auto-click on page load
       })
       .catch(err => {
         console.error('Error fetching data:', err);
