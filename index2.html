@@ -100,29 +100,55 @@
   <br><br><br>
 
   <script>
-    document.getElementById("expenseForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const form = e.target;
-      const data = new FormData(form);
+document.getElementById("expenseForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  const submitButton = form.querySelector('button[type="submit"]');
 
-      fetch("https://script.google.com/macros/s/AKfycbx7bVySy2H3n6uxrVaXvxYHqUJjRprZuTpzFSvZnvMZnKDNmi6h0H1LltMTl5X2l5vi/exec", {
-        method: "POST",
-        body: data
-      })
-      .then(res => res.text())
-      .then(response => {
-        if (response.startsWith("Error")) {
-          alert(response);
-        } else {
-          alert("Submitted successfully!");
-          form.reset();
-        }
-      })
-      .catch(err => {
-        console.error("Submission error:", err.message);
-        alert("Something went wrong.");
-      });
-    });
+  // Disable the button and change its appearance
+  submitButton.disabled = true;
+  submitButton.style.opacity = 0.6;
+  submitButton.textContent = "Submitting...";
+
+  // Validate 'others'
+  const untukApa = data.get("untukApa");
+  if (untukApa === "others" && !data.get("other").trim()) {
+    alert("Please specify what 'others' refers to.");
+    submitButton.disabled = false;
+    submitButton.style.opacity = 1;
+    submitButton.textContent = "Submit";
+    return;
+  }
+
+  // Replace untukApa if 'others' selected
+  const finalUntukApa = (untukApa === "others") ? data.get("other").trim() : untukApa;
+  data.set("untukApa", finalUntukApa);
+
+  fetch("https://script.google.com/macros/s/AKfycbx7bVySy2H3n6uxrVaXvxYHqUJjRprZuTpzFSvZnvMZnKDNmi6h0H1LltMTl5X2l5vi/exec", {
+    method: "POST",
+    body: data
+  })
+  .then(res => res.text())
+  .then(response => {
+    if (response.startsWith("Error")) {
+      alert(response);
+    } else {
+      alert("Submitted successfully!");
+      form.reset();
+    }
+  })
+  .catch(err => {
+    console.error("Submission error:", err.message);
+    alert("Something went wrong.");
+  })
+  .finally(() => {
+    // Re-enable button after fetch completes
+    submitButton.disabled = false;
+    submitButton.style.opacity = 1;
+    submitButton.textContent = "Submit";
+  });
+});
   </script>
 </body>
 </html>
