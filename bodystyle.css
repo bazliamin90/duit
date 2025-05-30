@@ -46,7 +46,7 @@ ol, ul {
 }
 
 input[type="search"],
-#expense-search {
+#expense-search, #income-search {
   padding: 4px 10px;
   font-family: monospace;
   font-size: 10px;
@@ -59,7 +59,7 @@ input[type="search"],
 }
 
 input[type="search"]:focus,
-#expense-search:focus {
+#expense-search:focus, #income-search:focus {
   border-color: #007bff;
   box-shadow: 0 0 6px rgba(0,123,255,0.25);
 }

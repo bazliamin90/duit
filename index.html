@@ -67,6 +67,10 @@
     <h3 id="red">Perbelanjaan (susunan menurun)</h3>
 <input type="text" id="expense-search" placeholder="Cari perbelanjaan..." style="margin-bottom:10px; padding:5px; width: 80%;">
 <div id="grouped-out-summary" style="margin: 20px;"></div>
+<h3 id="red">Pendapatan (susunan menurun)</h3>
+<input type="text" id="income-search" placeholder="Cari pendapatan..." style="margin-bottom:10px; padding:5px; width: 80%;">
+<div id="grouped-in-summary" style="margin: 20px;"></div>
+
 </div>
   <div id="loading">Loading data...</div>
   <div id="grid"></div>
@@ -180,6 +184,7 @@
       
           updateStatistics(filteredRows);
           showGroupedOutSummary(filteredRows);
+          showGroupedInSummary(filteredRows);
           updateSummary(startDate, endDate);
 
           setTimeout(() => {
@@ -219,6 +224,7 @@ gridInstance.updateConfig({ data: sortedRaw }).forceRender();
   insertGridHeading();
   updateStatistics(sortedRaw);
 showGroupedOutSummary(sortedRaw);
+showGroupedInSummary(sortedRaw);
   updateSummary('', '');
 
   setTimeout(() => {
@@ -242,6 +248,7 @@ showGroupedOutSummary(sortedRaw);
   
   updateStatistics(filteredRows);
   showGroupedOutSummary(filteredRows);
+  showGroupedInSummary(filteredRows);
   updateSummary('', '', `${currentMonth}/${currentYear}`);
   
   setTimeout(() => {
@@ -372,6 +379,81 @@ function showGroupedOutSummary(filteredRows) {
     };
     searchInput._listener = listener;
     searchInput.addEventListener('input', listener);
+  }
+
+  renderPage();
+}
+
+function showGroupedInSummary(filteredRows) {
+  const untukApaIndex = headers.findIndex(h => h.toLowerCase().includes("untuk"));
+  const perkaraIndex = headers.findIndex(h => h.toLowerCase() === "perkara");
+  const rmIndex = headers.findIndex(h => h.toLowerCase() === "rm");
+
+  const groupMap = {};
+
+  filteredRows.forEach(row => {
+    const perkara = row[perkaraIndex]?.toLowerCase();
+    if (perkara !== "in") return;
+
+    const rawValue = row[untukApaIndex] || "";
+    const normalized = rawValue.toLowerCase().trim().replace(/\s+/g, ' ');
+    const amount = parseFloat(row[rmIndex]) || 0;
+
+    groupMap[normalized] = (groupMap[normalized] || 0) + amount;
+  });
+
+  const sortedEntries = Object.entries(groupMap).sort((a, b) => b[1] - a[1]);
+
+  const pageSize = 10;
+  let currentPage = 1;
+  let currentFilter = '';
+
+  const renderPage = () => {
+    const filteredEntries = sortedEntries.filter(([label]) =>
+      label.includes(currentFilter.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredEntries.length / pageSize);
+    const start = (currentPage - 1) * pageSize;
+    const paginated = filteredEntries.slice(start, start + pageSize);
+
+    const listHtml = paginated.map(([label, total]) =>
+      `<li><strong>${label}</strong>: RM ${total.toFixed(2)}</li>`
+    ).join('');
+
+    const paginationHtml = `
+      <div style="text-align:center; margin-top: 10px;">
+        <button class="page-btn-in" data-page="prev" ${currentPage === 1 ? 'disabled style="opacity:0.5; cursor: not-allowed;"' : ''}>Prev</button>
+        ${Array.from({ length: totalPages }, (_, i) => 
+          `<button class="page-btn-in" data-page="${i + 1}" ${i + 1 === currentPage ? 'style="font-weight:bold;"' : ''}>${i + 1}</button>`
+        ).join('')}
+        <button class="page-btn-in" data-page="next" ${currentPage === totalPages ? 'disabled style="opacity:0.5; cursor: not-allowed;"' : ''}>Next</button>
+      </div>
+    `;
+
+    document.getElementById('grouped-in-summary').innerHTML = `
+      <ol style="padding-left: 20px;" start="${start + 1}">${listHtml}</ol>
+      ${paginationHtml}
+    `;
+
+    document.querySelectorAll('.page-btn-in').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.getAttribute('data-page');
+        if (action === 'prev' && currentPage > 1) currentPage--;
+        else if (action === 'next' && currentPage < totalPages) currentPage++;
+        else if (!isNaN(parseInt(action))) currentPage = parseInt(action);
+        renderPage();
+      });
+    });
+  };
+
+  const incomeSearchInput = document.getElementById('income-search');
+  if (incomeSearchInput) {
+    incomeSearchInput.addEventListener('input', e => {
+      currentFilter = e.target.value.trim();
+      currentPage = 1;
+      renderPage();
+    });
   }
 
   renderPage();
